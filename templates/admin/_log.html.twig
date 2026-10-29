@@ -1,0 +1,17 @@
+{# Fim do log do job. Recebe {log, logPath, row}: log null = arquivo não existe. #}
+{% trans_default_domain 'champs_cron_monitor' %}
+<div id="champs-cron-log" class="card-body">
+    {% if log is null %}
+        <div class="small text-muted">{{ 'detail.log_missing'|trans({'%file%': logPath}) }}</div>
+    {% else %}
+        <pre class="small bg-body-tertiary border rounded p-2 mb-1" style="max-height: 28rem; overflow: auto; white-space: pre-wrap;">{{ log }}</pre>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="small text-muted">{{ 'detail.log_hint'|trans({'%file%': logPath}) }}</div>
+            {# Link comum (não ajax): o navegador baixa o arquivo. #}
+            <a href="{{ path('champs_cron_monitor_log', {name: row.job.name}) }}" id="champs-cron-log-download"
+               class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-download"></i> {{ 'detail.download_log'|trans }}
+            </a>
+        </div>
+    {% endif %}
+</div>

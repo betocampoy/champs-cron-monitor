@@ -1,0 +1,35 @@
+{# Últimas execuções de um job. Recebe {history}: lista de {execution, state, duration}. #}
+{% trans_default_domain 'champs_cron_monitor' %}
+<div id="champs-cron-history" class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+        <thead>
+            <tr>
+                <th>{{ 'detail.start'|trans }}</th>
+                <th>{{ 'detail.end'|trans }}</th>
+                <th>{{ 'detail.duration'|trans }}</th>
+                <th>{{ 'detail.state'|trans }}</th>
+                <th class="text-end">{{ 'detail.memory'|trans }}</th>
+                <th>{{ 'detail.error'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for h in history %}
+            <tr>
+                <td class="text-nowrap">{{ h.execution.startedAt|date('d/m/Y H:i:s') }}</td>
+                <td class="text-nowrap">{{ h.execution.finishedAt ? h.execution.finishedAt|date('H:i:s') : '—' }}</td>
+                <td class="text-nowrap">{{ h.duration ?? '—' }}</td>
+                <td class="text-nowrap">
+                    {% include '@ChampsCronMonitor/admin/_state.html.twig' with {state: h.state} only %}
+                    {% if h.execution.exitCode is not null and h.execution.exitCode != 0 %}
+                        <span class="small text-muted">rc={{ h.execution.exitCode }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end text-nowrap">{{ h.execution.memoryPeakMb is not null ? h.execution.memoryPeakMb ~ ' MB' : '—' }}</td>
+                <td class="small text-danger" style="white-space: pre-wrap;">{{ h.execution.error }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="text-muted text-center py-4">{{ 'detail.no_history'|trans }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

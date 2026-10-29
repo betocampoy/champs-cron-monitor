@@ -1,0 +1,84 @@
+{# Tabela dos jobs da agenda. Recebe {rows} (CronMonitor::rows()), {jobsDomain} e {skippedWindowHours}. #}
+{% trans_default_domain 'champs_cron_monitor' %}
+<div id="champs-cron-jobs" class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>{{ 'jobs.job'|trans }}</th>
+                <th>{{ 'jobs.frequency'|trans }}</th>
+                <th>{{ 'jobs.status'|trans }}</th>
+                <th>{{ 'jobs.last_run'|trans }}</th>
+                <th>{{ 'jobs.next'|trans }}</th>
+                <th class="text-end"></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            {% set job = row.job %}
+            {# Falha/atraso/interrompida = problema da plataforma (vermelho); parcial = pendência que o cliente resolve (amarelo). #}
+            <tr class="{{ row.problem ? 'table-danger' : (row.state == 'partial' ? 'table-warning' : '') }}">
+                <td>
+                    <div class="fw-semibold">
+                        {{ job.name }}
+                        {% if job.type.value == 'script' %}<span class="badge bg-light text-dark border">{{ 'jobs.script'|trans }}</span>{% endif %}
+                    </div>
+                    <code class="small text-muted">{{ job.command }}</code>
+                    {# O que faz, por que importa e quem depende dela. Job fora da agenda não tem texto. #}
+                    {% if job.scheduled %}
+                        <div class="small text-body-secondary mt-1" style="max-width: 34rem;">{{ (job.name ~ '.explanation')|trans({}, jobsDomain) }}</div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if job.schedule %}
+                        <code>{{ job.schedule }}</code>
+                        <div class="small text-muted">{{ (job.name ~ '.description')|trans({}, jobsDomain) }}</div>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td {% if loop.first %}data-champs-tour="cron-job-status"{% endif %}>
+                    {% if job.scheduled %}
+                        {% set statusClasses = {active: 'bg-success', planned: 'bg-light text-dark border', blocked: 'bg-dark'} %}
+                        <span class="badge {{ statusClasses[job.status.value] }}"
+                              {% if job.blockedReason %}title="{{ job.blockedReason }}"{% endif %}>{{ ('status.' ~ job.status.value)|trans }}</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark" title="{{ 'status.unscheduled_hint'|trans }}">{{ 'status.unscheduled'|trans }}</span>
+                    {% endif %}
+                    {% if row.late %}
+                        <span class="badge bg-danger">{{ 'jobs.late'|trans }}</span>
+                    {% endif %}
+                    {% if row.skipped > 0 %}
+                        <span class="badge bg-warning text-dark" title="{{ 'jobs.skipped_hint'|trans }}">
+                            {{ 'jobs.skipped'|trans({'%count%': row.skipped, '%hours%': skippedWindowHours}) }}
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% include '@ChampsCronMonitor/admin/_state.html.twig' with {state: row.state} only %}
+                    {% if row.last %}
+                        <div class="small text-muted">
+                            {{ row.last.startedAt|date('d/m H:i') }}
+                            {% if row.state == 'running' %}
+                                · {{ 'jobs.ago'|trans({'%time%': row.elapsed}) }}
+                            {% elseif row.duration %}
+                                · {{ row.duration }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </td>
+                <td class="small">
+                    {{ row.next ? row.next|date('d/m H:i') : '—' }}
+                </td>
+                <td class="text-end">
+                    <a href="{{ path('champs_cron_monitor_show', {name: job.name}) }}" class="btn btn-sm btn-outline-secondary"
+                       {% if loop.first %}data-champs-tour="cron-job-log"{% endif %}>
+                        <i class="bi bi-journal-text"></i> {{ 'jobs.view_log'|trans }}
+                    </a>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="text-muted text-center py-4">{{ 'jobs.empty'|trans }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

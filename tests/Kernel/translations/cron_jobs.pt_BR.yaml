@@ -1,0 +1,6 @@
+clientes-sync:
+  description: 'De hora em hora'
+  explanation: 'Sincroniza.'
+legado-email:
+  description: 'A cada 2 min'
+  explanation: 'Script do legado.'

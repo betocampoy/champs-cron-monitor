@@ -1,0 +1,5 @@
+vendor/
+composer.lock
+.phpunit.cache/
+# gerado pelo Symfony 7.4 quando o kernel de teste sobe (tests/Kernel)
+config/reference.php

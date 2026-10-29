@@ -1,0 +1,14 @@
+{# Badge do estado de uma execução. Recebe {state} (CronMonitor::STATE_*). #}
+{% set classes = {
+    running: 'bg-primary',
+    success: 'bg-success',
+    failure: 'bg-danger',
+    partial: 'bg-warning text-dark',
+    interrupted: 'bg-warning text-dark',
+    skipped: 'bg-light text-dark border',
+    never: 'bg-secondary',
+} %}
+<span class="badge {{ classes[state]|default('bg-secondary') }}">
+    {% if state == 'running' %}<span class="spinner-border spinner-border-sm me-1" style="width: .7rem; height: .7rem;"></span>{% endif %}
+    {{ ('state.' ~ state)|trans({}, 'champs_cron_monitor') }}
+</span>

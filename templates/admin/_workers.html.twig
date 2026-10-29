@@ -1,0 +1,21 @@
+{# Workers do Messenger vivos. Recebe {workers}: lista, ou null quando não dá pra verificar. #}
+{% trans_default_domain 'champs_cron_monitor' %}
+<div id="champs-cron-workers" class="card-body">
+    {% if workers is null %}
+        <div class="small text-muted">{{ 'workers.not_verifiable'|trans }}</div>
+    {% elseif workers is empty %}
+        <div class="alert alert-danger small mb-2">{{ 'workers.none'|trans }}</div>
+        <div class="small text-muted">{{ 'workers.restart_hint'|trans }}</div>
+    {% else %}
+        <ul class="list-unstyled mb-2">
+            {% for w in workers %}
+                <li class="mb-1">
+                    <span class="badge bg-success">{{ 'workers.running'|trans }}</span>
+                    <code>{{ w.queues }}</code>
+                    <span class="small text-muted">pid {{ w.pid }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="small text-muted">{{ 'workers.restart_hint'|trans }}</div>
+    {% endif %}
+</div>

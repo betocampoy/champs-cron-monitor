@@ -1,0 +1,45 @@
+{# Filas do Messenger. Recebe {queues} (CronMonitor::queues()). #}
+{% trans_default_domain 'champs_cron_monitor' %}
+<div id="champs-cron-queues">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ 'queues.queue'|trans }}</th>
+                    <th class="text-end">{{ 'queues.ready'|trans }}</th>
+                    <th class="text-end">{{ 'queues.processing'|trans }}</th>
+                    <th class="text-end">{{ 'queues.scheduled'|trans }}</th>
+                    <th class="text-end">{{ 'queues.longest_wait'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for q in queues.queues %}
+                <tr>
+                    <td><code>{{ q.name }}</code></td>
+                    <td class="text-end {{ q.ready > 0 ? 'fw-semibold' : 'text-muted' }}">{{ q.ready }}</td>
+                    <td class="text-end {{ q.processing > 0 ? '' : 'text-muted' }}">{{ q.processing }}</td>
+                    <td class="text-end text-muted">{{ q.scheduled }}</td>
+                    <td class="text-end">{{ q.longestWait ?? '—' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-body border-top">
+        <div class="fw-semibold mb-2">
+            {{ 'queues.failures'|trans }}
+            <span class="badge {{ queues.totalFailures > 0 ? 'bg-danger' : 'bg-success' }}">{{ queues.totalFailures }}</span>
+        </div>
+        {% if queues.failures %}
+            <ul class="list-unstyled small mb-2">
+                {% for failure in queues.failures %}
+                    <li><code>{{ failure.type ?? ('queues.unknown_type'|trans) }}</code> — {{ failure.total }}</li>
+                {% endfor %}
+            </ul>
+            <div class="small text-muted">{{ 'queues.failures_hint'|trans }}</div>
+        {% else %}
+            <div class="small text-muted">{{ 'queues.no_failures'|trans }}</div>
+        {% endif %}
+    </div>
+</div>

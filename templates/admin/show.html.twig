@@ -1,0 +1,58 @@
+{% extends layout %}
+
+{% trans_default_domain 'champs_cron_monitor' %}
+
+{% block title %}{{ row.job.name }} · {{ 'title'|trans }}{% endblock %}
+
+{% block content %}
+{% set job = row.job %}
+<div class="mb-2">
+    <a href="{{ path('champs_cron_monitor_index') }}" class="text-decoration-none">&larr; {{ 'detail.back'|trans }}</a>
+</div>
+
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+        <h1 class="h4 m-0">{{ job.name }}</h1>
+        <code class="small text-muted">{{ job.command }}</code>
+        {% if job.scheduled %}
+            <div class="small text-body-secondary mt-1" style="max-width: 48rem;">{{ (job.name ~ '.explanation')|trans({}, jobsDomain) }}</div>
+        {% endif %}
+        {% if job.schedule %}
+            <div class="small text-muted mt-1">
+                <code>{{ job.schedule }}</code> · {{ (job.name ~ '.description')|trans({}, jobsDomain) }}
+                {% if row.next %}· {{ 'jobs.next'|trans }}: {{ row.next|date('d/m H:i') }}{% endif %}
+            </div>
+        {% endif %}
+        {% if job.blockedReason %}
+            <div class="small mt-1"><span class="badge bg-dark">{{ 'status.blocked'|trans }}</span> {{ job.blockedReason }}</div>
+        {% endif %}
+    </div>
+    {# Sem atualização automática de propósito: o log mudando a cada poucos segundos não deixava ler.
+       Recarrega só quando a pessoa pede. #}
+    <div class="d-flex align-items-center gap-2">
+        <small class="text-muted">
+            {{ 'updated_at'|trans }} <span id="champs-cron-updated-at">{{ updatedAt|date('H:i:s') }}</span>
+        </small>
+        {% import '@ChampsFrontend/components/ui/_form.html.twig' as ui %}
+        {{ ui.renderButton({
+            mode: 'ajax',
+            route: path('champs_cron_monitor_show_status', {name: job.name}),
+            withInputs: false,
+            label: 'detail.reload'|trans,
+            icon: 'bi-arrow-clockwise',
+            classes: 'btn btn-sm btn-outline-secondary',
+            attrs: {'data-champs-ajax-method': 'GET', id: 'champs-cron-reload'},
+        }) }}
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header fw-semibold">{{ 'detail.log'|trans({'%lines%': logLines}) }}</div>
+    {% include '@ChampsCronMonitor/admin/_log.html.twig' %}
+</div>
+
+<div class="card">
+    <div class="card-header fw-semibold">{{ 'detail.history'|trans({'%count%': history|length}) }}</div>
+    {% include '@ChampsCronMonitor/admin/_history.html.twig' %}
+</div>
+{% endblock %}
